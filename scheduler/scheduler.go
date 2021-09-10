@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,75 +18,72 @@ type schedulerMetrics struct {
 	Scheduler scheduler `json:"scheduler"`
 }
 type scheduler struct {
-	SchedulerInfo schedulerInfo `json:"schedulerInfo"`
+	SchedulerInfo metrics `json:"schedulerInfo"`
 }
 
-type schedulerInfo struct {
-	Capacity    float64 `json:"capacity"`
-	MaxCapacity float64 `json:"maxCapacity"`
-	// QueueName    float64 `json:"queueName"`
+type metrics struct {
+	Capacity     float64 `json:"capacity"`
+	MaxCapacity  float64 `json:"maxCapacity"`
 	UsedCapacity float64 `json:"usedCapacity"`
-	// Queues       queue   `json:"queues"`
+	Queues       queues  `json:"queues"`
 }
 
-type queue struct {
-	QueueItem []queueItem `json:"queue"`
+type queues struct {
+	Queue []queueItem `json:"queue"`
 }
 type queueItem struct {
-	Capacity             float64 `json:"capacity"`
-	UsedCapacity         float64 `json:"usedCapacity"`
-	MaxCapacity          float64 `json:"maxCapacity"`
-	AbsoluteCapacity     float64 `json:"absoluteCapacity"`
-	AbsoluteMaxCapacity  float64 `json:"absoluteMaxCapacity"`
-	AbsoluteUsedCapacity float64 `json:"absoluteUsedCapacity"`
-	NumApplications      float64 `json:"numApplications"`
-	QueueName            float64 `json:"queueName"`
-	State                string  `json:"state"`
+	QueueName              string  `json:"queueName"`              //队列名
+	State                  string  `json:"state"`                  //队列状态
+	Capacity               float64 `json:"capacity"`               //容量占比
+	UsedCapacity           float64 `json:"usedCapacity"`           //容量使用量
+	MaxCapacity            float64 `json:"maxCapacity"`            //最大容量占比
+	AbsoluteCapacity       float64 `json:"absoluteCapacity"`       //绝对容量占比
+	AbsoluteMaxCapacity    float64 `json:"absoluteMaxCapacity"`    //绝对容量最大占比
+	AbsoluteUsedCapacity   float64 `json:"absoluteUsedCapacity"`   //绝对使用的容量占比
+	NumApplications        int64   `json:"numApplications"`        //任务数量
+	MaxApplications        int64   `json:"maxApplications"`        //最大任务数量
+	MaxApplicationsPerUser int64   `json:"maxApplicationsPerUser"` //每个用户最大用户数量
+	NumContainers          int64   `json:"numContainers"`          //容器任务数量
+	UserLimit              int64   `json:"userLimit"`              //用户数量限制
+
 }
 
-type collector struct {
-	endpoint    *url.URL
-	up          *prometheus.Desc
-	capacity    *prometheus.Desc
-	maxCapacity *prometheus.Desc
-	// queueName    *prometheus.Desc
+type collector struct { //prometheus.Register()方法接收一个接口，接口需要实现Describe方法和Collect方法
+	endpoint     *url.URL
+	up           *prometheus.Desc
+	capacity     *prometheus.Desc
+	maxCapacity  *prometheus.Desc
 	usedCapacity *prometheus.Desc
+	queue        *prometheus.Desc
 }
 
-const metricsNamespace = "yarn_scheduler"
+const schedulerMetricsNamespace = "yarn_schduler"
+const queueMetricsNamespace = "yarn_queue"
 
 func newFuncMetric(metricName string, docString string) *prometheus.Desc {
-	return prometheus.NewDesc(prometheus.BuildFQName(metricsNamespace, "", metricName), docString, nil, nil)
+	return prometheus.NewDesc(prometheus.BuildFQName(schedulerMetricsNamespace, "", metricName), docString, nil, nil)
 }
 
 func newCapacityMetric(metricName string, docString string) *prometheus.Desc {
-	return prometheus.NewDesc(prometheus.BuildFQName(metricsNamespace, "", metricName), docString, []string{"name"}, nil)
+	return prometheus.NewDesc(prometheus.BuildFQName(schedulerMetricsNamespace, "", metricName), docString, []string{"name"}, nil)
 }
 
 func newQueuesMetric(metricName string, docString string) *prometheus.Desc {
-	return prometheus.NewDesc(prometheus.BuildFQName(metricsNamespace, "", metricName), docString,
-		[]string{"name", "capacity", "usedCapacity", "maxCapacity", "absoluteCapacity", "absoluteMaxCapacity", "absoluteUsedCapacity", "numApplications", "queueName", "state"}, nil)
+	return prometheus.NewDesc(prometheus.BuildFQName(queueMetricsNamespace, "", metricName), docString,
+		[]string{"queueName",
+			"state",
+			"capacity",
+			"maxCapacity",
+			"absoluteCapacity",
+			"absoluteMaxCapacity",
+			"absoluteUsedCapacity",
+			"numApplications",
+			"maxApplications",
+			"maxApplicationsPerUser",
+			"numContainers",
+			"userLimit",
+		}, nil)
 }
-
-func NewSchedulerCollector(endpoint *url.URL) *collector {
-	return &collector{
-		endpoint:    endpoint,
-		up:          newFuncMetric("up", "Able to contact YARN"),
-		capacity:    newCapacityMetric("capacity", "capacity"),
-		maxCapacity: newFuncMetric("maxCapacity", "maxCapacity"),
-		// queueName:    newFuncMetric("queueName", "usedCapacity"),
-		usedCapacity: newFuncMetric("usedCapacity", "usedCapacity"),
-	}
-}
-
-func (c *collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.up
-	ch <- c.capacity
-	ch <- c.maxCapacity
-	// ch <- c.queueName
-	ch <- c.usedCapacity
-}
-
 func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	up := 1.0
 
@@ -98,12 +96,28 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 
 	ch <- prometheus.MustNewConstMetric(c.capacity, prometheus.CounterValue, float64(metrics.Capacity), "haha")
 	ch <- prometheus.MustNewConstMetric(c.maxCapacity, prometheus.CounterValue, float64(metrics.MaxCapacity))
-	// ch <- prometheus.MustNewConstMetric(c.queueName, prometheus.CounterValue, float64(metrics.QueueName))
 	ch <- prometheus.MustNewConstMetric(c.usedCapacity, prometheus.CounterValue, float64(metrics.UsedCapacity))
+	for _, queueItem := range metrics.Queues.Queue {
+		ch <- prometheus.MustNewConstMetric(c.queue, prometheus.CounterValue, queueItem.UsedCapacity,
+			queueItem.QueueName,
+			queueItem.State,
+			fmt.Sprintf("%f", queueItem.Capacity),
+			fmt.Sprintf("%f", queueItem.MaxCapacity),
+			fmt.Sprintf("%f", queueItem.AbsoluteCapacity),
+			fmt.Sprintf("%f", queueItem.AbsoluteMaxCapacity),
+			fmt.Sprintf("%f", queueItem.AbsoluteUsedCapacity),
+			fmt.Sprintf("%d", queueItem.NumApplications),
+			fmt.Sprintf("%d", queueItem.MaxApplications),
+			fmt.Sprintf("%d", queueItem.MaxApplicationsPerUser),
+			fmt.Sprintf("%d", queueItem.NumContainers),
+			fmt.Sprintf("%d", queueItem.UserLimit),
+		)
+
+	}
 	return
 }
 
-func fetch(u *url.URL) (*schedulerInfo, error) {
+func fetch(u *url.URL) (*metrics, error) {
 	req := http.Request{
 		Method:     "GET",
 		URL:        u,
@@ -113,10 +127,8 @@ func fetch(u *url.URL) (*schedulerInfo, error) {
 		Header:     make(http.Header),
 		Host:       u.Host,
 	}
-	// resp,err:=krb5.GetSpnegoHttpClient().Client.Do(&req)
 	var resp *http.Response
 	var err error
-	// resp, err = krb5.GetSpnegoHttpClient().Client.Do(&req)
 	isUseKerberos := os.Getenv("isUseKerberos")
 	if isUseKerberos == "true" {
 		spnegoClient := krb5.GetSpnegoHttpClient()
@@ -139,9 +151,29 @@ func fetch(u *url.URL) (*schedulerInfo, error) {
 
 	var c schedulerMetrics
 	err = json.NewDecoder(resp.Body).Decode(&c)
-	fmt.Printf("%#v", c)
+	// fmt.Printf("%#v", c)
 	if err != nil {
+		log.Fatal(err.Error())
 		return nil, err
 	}
 	return &c.Scheduler.SchedulerInfo, nil
+}
+
+func NewSchedulerCollector(endpoint *url.URL) *collector {
+	return &collector{
+		endpoint:     endpoint,
+		up:           newFuncMetric("up", "Able to contact YARN"),
+		capacity:     newCapacityMetric("capacity", "capacity"),
+		maxCapacity:  newFuncMetric("maxCapacity", "maxCapacity"),
+		usedCapacity: newFuncMetric("usedCapacity", "usedCapacity"),
+		queue:        newQueuesMetric("queue", "queue"),
+	}
+}
+
+func (c *collector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.up
+	ch <- c.capacity
+	ch <- c.maxCapacity
+	ch <- c.usedCapacity
+	ch <- c.queue
 }

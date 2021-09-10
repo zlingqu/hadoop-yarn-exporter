@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"hadoop-yarn-exporter/collector"
+	"hadoop-yarn-exporter/application"
+	"hadoop-yarn-exporter/cluster"
 	"hadoop-yarn-exporter/scheduler"
 	"log"
 	"net/http"
@@ -29,16 +30,26 @@ func main() {
 	}
 	os.Setenv("isUseKerberos", *isUseKerberos)
 
+	//cluser metrics
 	clusterUrl, _ := url.Parse(*yarnUrl + "/ws/v1/cluster/metrics")
-	c1 := collector.NewClusterCollector(clusterUrl)
+	c1 := cluster.NewClusterCollector(clusterUrl)
 	err := prometheus.Register(c1)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	//scheduler metrics
 	schedulerUrl, _ := url.Parse(*yarnUrl + "/ws/v1/cluster/scheduler")
 	c2 := scheduler.NewSchedulerCollector(schedulerUrl)
 	err = prometheus.Register(c2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//application metrics
+	applicationUrl, _ := url.Parse(*yarnUrl + "/ws/v1/cluster/apps/?state=Running")
+	c3 := application.NewApplicationCollector(applicationUrl)
+	err = prometheus.Register(c3)
 	if err != nil {
 		log.Fatal(err)
 	}

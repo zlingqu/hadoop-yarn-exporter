@@ -1,4 +1,4 @@
-package collector
+package cluster
 
 import (
 	"encoding/json"
