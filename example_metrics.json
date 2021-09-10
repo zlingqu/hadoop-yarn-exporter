@@ -1,0 +1,77 @@
+{
+  "clusterMetrics": {
+    "appsSubmitted": 1,
+    "appsCompleted": 2,
+    "appsPending": 3,
+    "appsRunning": 4,
+    "appsFailed": 5,
+    "appsKilled": 6,
+    "reservedMB": 7,
+    "availableMB": 8,
+    "allocatedMB": 9,
+    "reservedVirtualCores": 10,
+    "availableVirtualCores": 11,
+    "allocatedVirtualCores": 12,
+    "containersAllocated": 13,
+    "containersReserved": 14,
+    "containersPending": 15,
+    "totalMB": 16,
+    "totalVirtualCores": 17,
+    "totalNodes": 18,
+    "lostNodes": 19,
+    "unhealthyNodes": 20,
+    "decommissioningNodes": 21,
+    "decommissionedNodes": 22,
+    "rebootedNodes": 23,
+    "activeNodes": 24,
+    "shutdownNodes": 25,
+    "totalUsedResourcesAcrossPartition": {
+      "memory": 0,
+      "vCores": 0,
+      "resourceInformations": {
+        "resourceInformation": [
+          {
+            "maximumAllocation": 9223372036854775807,
+            "minimumAllocation": 0,
+            "name": "memory-mb",
+            "resourceType": "COUNTABLE",
+            "units": "Mi",
+            "value": 0
+          },
+          {
+            "maximumAllocation": 9223372036854775807,
+            "minimumAllocation": 0,
+            "name": "vcores",
+            "resourceType": "COUNTABLE",
+            "units": "",
+            "value": 0
+          }
+        ]
+      }
+    },
+    "totalClusterResourcesAcrossPartition": {
+      "memory": 729088,
+      "vCores": 96,
+      "resourceInformations": {
+        "resourceInformation": [
+          {
+            "maximumAllocation": 9223372036854775807,
+            "minimumAllocation": 0,
+            "name": "memory-mb",
+            "resourceType": "COUNTABLE",
+            "units": "Mi",
+            "value": 729088
+          },
+          {
+            "maximumAllocation": 9223372036854775807,
+            "minimumAllocation": 0,
+            "name": "vcores",
+            "resourceType": "COUNTABLE",
+            "units": "",
+            "value": 96
+          }
+        ]
+      }
+    }
+  }
+}
