@@ -204,13 +204,12 @@ func fetch(u *url.URL) (*metrics, error) {
 		Header:     make(http.Header),
 		Host:       u.Host,
 	}
-	// resp,err:=krb5.GetSpnegoHttpClient().Client.Do(&req)
 	var resp *http.Response
 	var err error
-	// resp, err = krb5.GetSpnegoHttpClient().Client.Do(&req)
 	isUseKerberos := os.Getenv("isUseKerberos")
 	if isUseKerberos == "true" {
-		resp, err = krb5.GetSpnegoHttpClient().Client.Do(&req)
+		spnegoClient := krb5.GetSpnegoHttpClient()
+		resp, err = spnegoClient.Do(&req)
 		// fmt.Printf("Use krb")
 	} else {
 		// fmt.Printf("No use krb")
