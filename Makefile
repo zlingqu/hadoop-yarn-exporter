@@ -5,7 +5,7 @@ adpBackendImage=docker.dm-ai.cn/cc/hadoop-yarn-exporter:$(tag)
 
 clean:
 	rm -rf build
-compile: clean init-env
+compile: 
 	cd $(srcDir) && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/$(BINARY_NAME) -v ./
 
 run:
