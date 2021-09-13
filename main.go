@@ -18,7 +18,6 @@ var (
 	isUseKerberos  = flag.String("isUseKerberos", "true", "是否使用kerberos,ture|false")
 	port           = flag.String("port", "9113", "指定监听端口")
 	keytabFileName = flag.String("keytabFileName", "default.keytab", "keytab文件的名字")
-	kerberosName   = flag.String("kerberosName", "", "kerberos的用户名，必填")
 	yarnUrl        = flag.String("yarnUrl", "http://ccgdc-corenode01.i.nease.net:8088", "yarn的url地址")
 )
 
