@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	isUseKerberos  = flag.String("isUseKerberos", "true", "是否使用kerberos,ture|false,默认true")
-	keytabFileName = flag.String("keytabFileName", "default.keytab", "keytab文件的名字，默认是default.keytab")
+	isUseKerberos  = flag.String("isUseKerberos", "true", "是否使用kerberos,ture|false")
+	port           = flag.String("port", "9113", "指定监听端口")
+	keytabFileName = flag.String("keytabFileName", "default.keytab", "keytab文件的名字")
 	kerberosName   = flag.String("kerberosName", "", "kerberos的用户名，必填")
-	yarnUrl        = flag.String("yarnUrl", "http://ccgdc-corenode01.i.nease.net:8088", "yarn的url地址，默认是http://ccgdc-utilitynode01.i.nease.net:8088")
+	yarnUrl        = flag.String("yarnUrl", "http://ccgdc-corenode01.i.nease.net:8088", "yarn的url地址")
 )
 
 func main() {
@@ -55,5 +56,5 @@ func main() {
 	}
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":9113", nil)
+	http.ListenAndServe(":"+*port, nil)
 }
