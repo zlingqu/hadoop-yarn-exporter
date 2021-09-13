@@ -14,7 +14,8 @@ func GetSpnegoHttpClient() spnego.Client {
 	l := log.New(os.Stderr, "GOKRB5 Client: ", log.LstdFlags)
 
 	// 加载keytab文件
-	ktFromFile, err := keytab.Load("quzhongling.keytab")
+	keytabFileName := os.Getenv("keytabFileName")
+	ktFromFile, err := keytab.Load(keytabFileName)
 	if err != nil {
 		l.Fatalf("加载keytab文件错误")
 	}

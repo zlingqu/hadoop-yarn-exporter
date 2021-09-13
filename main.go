@@ -15,11 +15,10 @@ import (
 )
 
 var (
-	isUseKerberos  = flag.String("is_use_krb", "true", "是否使用kerberos,ture|false,默认true")
-	keytabFileName = flag.String("keytab_file_name", "default.keytab", "keytab文件的名字，默认是default.keytab")
-	kerberosName   = flag.String("kerberos_name", "", "kerberos的用户名，必填")
-	// yarnUrl        = flag.String("yarn_url", "http://ccgdc-utilitynode01.i.nease.net:8088", "yarn的url地址，默认是http://ccgdc-utilitynode01.i.nease.net:8088") //老的hdp2集群
-	yarnUrl = flag.String("yarn_url", "http://ccgdc-corenode01.i.nease.net:8088", "yarn的url地址，默认是http://ccgdc-utilitynode01.i.nease.net:8088") //老的hdp2集群
+	isUseKerberos  = flag.String("isUseKerberos", "true", "是否使用kerberos,ture|false,默认true")
+	keytabFileName = flag.String("keytabFileName", "default.keytab", "keytab文件的名字，默认是default.keytab")
+	kerberosName   = flag.String("kerberosName", "", "kerberos的用户名，必填")
+	yarnUrl        = flag.String("yarnUrl", "http://ccgdc-corenode01.i.nease.net:8088", "yarn的url地址，默认是http://ccgdc-utilitynode01.i.nease.net:8088")
 )
 
 func main() {
@@ -29,6 +28,7 @@ func main() {
 		log.Fatal("isUseKerberos,参数错误")
 	}
 	os.Setenv("isUseKerberos", *isUseKerberos)
+	os.Setenv("keytabFileName", *keytabFileName)
 
 	//cluser metrics
 	clusterUrl, _ := url.Parse(*yarnUrl + "/ws/v1/cluster/metrics")
@@ -46,7 +46,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//application metrics
+	// application metrics
 	applicationUrl, _ := url.Parse(*yarnUrl + "/ws/v1/cluster/apps/?state=Running")
 	c3 := application.NewApplicationCollector(applicationUrl)
 	err = prometheus.Register(c3)

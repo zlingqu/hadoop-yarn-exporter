@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/jcmturner/gofork v1.0.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.0 // direct
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
@@ -19,6 +19,6 @@ require (
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
-	gopkg.in/jcmturner/gokrb5.v7 v7.5.0 // indirect
+	gopkg.in/jcmturner/gokrb5.v7 v7.5.0 // direct
 	gopkg.in/jcmturner/rpc.v1 v1.1.0 // indirect
 )
