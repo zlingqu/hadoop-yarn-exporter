@@ -25,6 +25,7 @@ func main() {
 
 	flag.Parse()
 	if *isUseKerberos != "true" && *isUseKerberos != "false" {
+		flag.Usage()
 		log.Fatal("isUseKerberos,参数错误")
 	}
 	os.Setenv("isUseKerberos", *isUseKerberos)
